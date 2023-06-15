@@ -15,6 +15,7 @@ namespace ZendeskUtility
         private readonly List<string> CloseTicketList;
         private static Boolean CloseLimitEnabled = false;
         static ColorGenerator colorGenerator = new ColorGenerator();
+        private List<string> AttachmentFileNames;
         public MainForm()
         {
             try
@@ -42,6 +43,7 @@ namespace ZendeskUtility
                 MessageBox.Show("Error reading APIKEY.txt: " + e.Message);
             }
             CloseTicketList = new List<string>();
+            AttachmentFileNames = new List<string>();
             Cleanup();
             InitializeComponent();
             UpdateStatus("Idle", 0);
@@ -600,6 +602,154 @@ namespace ZendeskUtility
             else
             {
                 colorGenerator.StartTimer();
+            }
+        }
+
+
+
+        private void UpdateAttachments(string[] fileNames)
+        {
+            try
+            {
+
+                //print the list of attachments 
+                foreach (string fname in fileNames)
+                {
+                    if (!AttachmentFileNames.Contains(fname))
+                        AttachmentFileNames.Add(fname);
+
+                }
+                Update_AttachmentList.DataSource = AttachmentFileNames;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error updating attachment list: {ex.Message}");
+            }
+        }
+
+        private void Update_AddAttachButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new()
+            {
+                Multiselect = true,
+                Filter = "All Files|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                UpdateAttachments(openFileDialog.FileNames);
+            }
+            Update_AttachmentList.DataSource = null;
+            Update_AttachmentList.DataSource = AttachmentFileNames;
+        }
+
+        private void Update_RemoveAttachButton_Click(object sender, EventArgs e)
+        {
+            if (Update_AttachmentList.SelectedItem != null)
+            {
+                string? selectedItem = Update_AttachmentList.SelectedItem.ToString();
+#pragma warning disable CS8604 // Possible null reference argument.
+                AttachmentFileNames.Remove(selectedItem);
+#pragma warning restore CS8604 // Possible null reference argument.
+                Update_AttachmentList.DataSource = AttachmentFileNames;
+            }
+            Update_AttachmentList.DataSource = null;
+            Update_AttachmentList.DataSource = AttachmentFileNames;
+        }
+
+        private void Update_SubmitButton_Click(object sender, EventArgs e)
+        {
+            bool isValidTicketNumber = int.TryParse(ZDTicketTextBox.Text, out int ticketNumber);
+            if (isValidTicketNumber)
+            {
+                string[] tokens = Array.Empty<string>();
+                List<string> zdTokens = new();
+                foreach (string filename in AttachmentFileNames)
+                {
+                    byte[] fileContents = File.ReadAllBytes(filename);
+                    string url = "https://dhecs.zendesk.com/api/v2/uploads" + "?filename=" + Path.GetFileName(filename);
+                    HttpWebRequest imgrequest = (HttpWebRequest)WebRequest.Create(url);
+                    imgrequest.Method = "POST";
+                    imgrequest.ContentType = "application/binary";
+                    imgrequest.Headers["Authorization"] = "Basic " + Globals.API_KEY;
+                    using (Stream imgrequestStream = imgrequest.GetRequestStream())
+                    {
+                        imgrequestStream.Write(fileContents, 0, fileContents.Length);
+                    }
+                    try
+                    {
+                        using HttpWebResponse imgresponse = (HttpWebResponse)imgrequest.GetResponse();
+                        if (imgresponse.StatusCode == HttpStatusCode.Created)
+                        {
+                            log.Info($"Uploaded {Path.GetFileName(filename)} to Zendesk.");
+                            using var reader = new StreamReader(imgresponse.GetResponseStream());
+                            string responseText = reader.ReadToEnd();
+                            dynamic? jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseText);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                            string? token = jsonResponse["upload"]["token"];
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                            zdTokens.Add(token);
+
+                            log.Debug($"Token generated: {token}");
+                        }
+                        else
+                        {
+                            log.Warn($"Error uploading {Path.GetFileName(filename)} to Zendesk: {imgresponse.StatusCode} - {imgresponse.StatusDescription}");
+                        }
+                    }
+                    catch (WebException ex)
+                    {
+                        log.Error($"Error uploading {Path.GetFileName(filename)} to Zendesk: {ex.Message}");
+
+                    }
+                }
+                tokens = zdTokens.ToArray();
+                string publicComment = Update_PublicToggleButton.Checked ? "true" : "false";
+                string commentText = Update_NoteTextBox.Text;
+                var ZDPayload = new
+                {
+                    ticket = new Ticket
+                    {
+                        status = "hold",
+                        comment = new Comment
+                        {
+                            @public = publicComment,
+                            body = commentText,
+                            uploads = tokens == null ? Array.Empty<string>() : tokens
+                        }
+                    }
+                };
+                SendZendeskPayload(ticketNumber, ZDPayload);
+            }
+            else
+            {
+                MessageBox.Show("Invalid Ticket Number");
+            }
+        }
+
+        private void Update_PublicToggleButton_CheckedChanged(object sender, EventArgs e)
+        {
+            //if checked, set InternalToggleButton to unchecked, and vice versa
+            if (Update_PublicToggleButton.Checked)
+            {
+                Update_InternalToggleButton.Checked = false;
+            }
+            else
+            {
+                Update_InternalToggleButton.Checked = true;
+            }
+        }
+
+        private void Update_InternalToggleButton_CheckedChanged(object sender, EventArgs e)
+        {
+            //if checked, set PublicToggleButton to unchecked, and vice versa
+            if (Update_InternalToggleButton.Checked)
+            {
+                Update_PublicToggleButton.Checked = false;
+            }
+            else
+            {
+                Update_PublicToggleButton.Checked = true;
             }
         }
     }

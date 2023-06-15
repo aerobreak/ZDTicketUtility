@@ -60,6 +60,16 @@
             Close_AddButton = new Button();
             InputTicketTextBox = new TextBox();
             Close_TicketDisplayListBox = new ListBox();
+            tabPage1 = new TabPage();
+            Update_RemoveAttachButton = new Button();
+            Update_AttachmentList = new ListBox();
+            Update_AddAttachButton = new Button();
+            Update_SubmitButton = new Button();
+            Update_AttachmentsLabel = new Label();
+            Update_InternalToggleButton = new CheckBox();
+            Update_PublicToggleButton = new CheckBox();
+            Update_NoteTextBox = new RichTextBox();
+            Update_NoteTextLabel = new Label();
             InitialsTextBox = new TextBox();
             InitialsLabel = new Label();
             statusStrip = new StatusStrip();
@@ -69,6 +79,7 @@
             DiagTabPage.SuspendLayout();
             repairTabPage.SuspendLayout();
             CloseTabPage.SuspendLayout();
+            tabPage1.SuspendLayout();
             statusStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -142,11 +153,14 @@
             // 
             // TabControl
             // 
+            TabControl.AllowDrop = true;
             TabControl.Controls.Add(DiagTabPage);
             TabControl.Controls.Add(repairTabPage);
             TabControl.Controls.Add(CloseTabPage);
+            TabControl.Controls.Add(tabPage1);
             TabControl.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             TabControl.Location = new Point(12, 127);
+            TabControl.Multiline = true;
             TabControl.Name = "TabControl";
             TabControl.SelectedIndex = 0;
             TabControl.Size = new Size(304, 393);
@@ -410,6 +424,115 @@
             Close_TicketDisplayListBox.Size = new Size(282, 154);
             Close_TicketDisplayListBox.TabIndex = 0;
             // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(Update_RemoveAttachButton);
+            tabPage1.Controls.Add(Update_AttachmentList);
+            tabPage1.Controls.Add(Update_AddAttachButton);
+            tabPage1.Controls.Add(Update_SubmitButton);
+            tabPage1.Controls.Add(Update_AttachmentsLabel);
+            tabPage1.Controls.Add(Update_InternalToggleButton);
+            tabPage1.Controls.Add(Update_PublicToggleButton);
+            tabPage1.Controls.Add(Update_NoteTextBox);
+            tabPage1.Controls.Add(Update_NoteTextLabel);
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(296, 365);
+            tabPage1.TabIndex = 4;
+            tabPage1.Text = "Update";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // Update_RemoveAttachButton
+            // 
+            Update_RemoveAttachButton.Location = new Point(154, 238);
+            Update_RemoveAttachButton.Name = "Update_RemoveAttachButton";
+            Update_RemoveAttachButton.Size = new Size(107, 23);
+            Update_RemoveAttachButton.TabIndex = 9;
+            Update_RemoveAttachButton.Text = "Remove Selected";
+            Update_RemoveAttachButton.UseVisualStyleBackColor = true;
+            Update_RemoveAttachButton.Click += Update_RemoveAttachButton_Click;
+            // 
+            // Update_AttachmentList
+            // 
+            Update_AttachmentList.FormattingEnabled = true;
+            Update_AttachmentList.ItemHeight = 15;
+            Update_AttachmentList.Location = new Point(6, 264);
+            Update_AttachmentList.Name = "Update_AttachmentList";
+            Update_AttachmentList.Size = new Size(282, 64);
+            Update_AttachmentList.TabIndex = 8;
+            // 
+            // Update_AddAttachButton
+            // 
+            Update_AddAttachButton.Location = new Point(28, 238);
+            Update_AddAttachButton.Name = "Update_AddAttachButton";
+            Update_AddAttachButton.Size = new Size(108, 23);
+            Update_AddAttachButton.TabIndex = 7;
+            Update_AddAttachButton.Text = "Add Attachment";
+            Update_AddAttachButton.UseVisualStyleBackColor = true;
+            Update_AddAttachButton.Click += Update_AddAttachButton_Click;
+            // 
+            // Update_SubmitButton
+            // 
+            Update_SubmitButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            Update_SubmitButton.Location = new Point(6, 331);
+            Update_SubmitButton.Name = "Update_SubmitButton";
+            Update_SubmitButton.Size = new Size(282, 28);
+            Update_SubmitButton.TabIndex = 6;
+            Update_SubmitButton.Text = "Post Update";
+            Update_SubmitButton.UseVisualStyleBackColor = true;
+            Update_SubmitButton.Click += Update_SubmitButton_Click;
+            // 
+            // Update_AttachmentsLabel
+            // 
+            Update_AttachmentsLabel.AutoSize = true;
+            Update_AttachmentsLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            Update_AttachmentsLabel.Location = new Point(3, 220);
+            Update_AttachmentsLabel.Name = "Update_AttachmentsLabel";
+            Update_AttachmentsLabel.Size = new Size(85, 15);
+            Update_AttachmentsLabel.TabIndex = 4;
+            Update_AttachmentsLabel.Text = "Attachments: ";
+            // 
+            // Update_InternalToggleButton
+            // 
+            Update_InternalToggleButton.AutoSize = true;
+            Update_InternalToggleButton.Location = new Point(154, 198);
+            Update_InternalToggleButton.Name = "Update_InternalToggleButton";
+            Update_InternalToggleButton.Size = new Size(95, 19);
+            Update_InternalToggleButton.TabIndex = 3;
+            Update_InternalToggleButton.Text = "Internal Note";
+            Update_InternalToggleButton.UseVisualStyleBackColor = true;
+            Update_InternalToggleButton.CheckedChanged += Update_InternalToggleButton_CheckedChanged;
+            // 
+            // Update_PublicToggleButton
+            // 
+            Update_PublicToggleButton.AutoSize = true;
+            Update_PublicToggleButton.Location = new Point(32, 198);
+            Update_PublicToggleButton.Name = "Update_PublicToggleButton";
+            Update_PublicToggleButton.Size = new Size(85, 19);
+            Update_PublicToggleButton.TabIndex = 2;
+            Update_PublicToggleButton.Text = "Public Post";
+            Update_PublicToggleButton.UseVisualStyleBackColor = true;
+            Update_PublicToggleButton.CheckedChanged += Update_PublicToggleButton_CheckedChanged;
+            // 
+            // Update_NoteTextBox
+            // 
+            Update_NoteTextBox.Location = new Point(4, 21);
+            Update_NoteTextBox.Name = "Update_NoteTextBox";
+            Update_NoteTextBox.Size = new Size(284, 171);
+            Update_NoteTextBox.TabIndex = 1;
+            Update_NoteTextBox.Text = "";
+            // 
+            // Update_NoteTextLabel
+            // 
+            Update_NoteTextLabel.AutoSize = true;
+            Update_NoteTextLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            Update_NoteTextLabel.Location = new Point(6, 3);
+            Update_NoteTextLabel.Name = "Update_NoteTextLabel";
+            Update_NoteTextLabel.Size = new Size(130, 15);
+            Update_NoteTextLabel.TabIndex = 0;
+            Update_NoteTextLabel.Text = "Update Note Content:";
+            // 
             // InitialsTextBox
             // 
             InitialsTextBox.Location = new Point(259, 65);
@@ -457,6 +580,7 @@
             // 
             // MainForm
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(323, 540);
@@ -482,6 +606,8 @@
             repairTabPage.PerformLayout();
             CloseTabPage.ResumeLayout(false);
             CloseTabPage.PerformLayout();
+            tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             ResumeLayout(false);
@@ -529,5 +655,15 @@
         private ToolStripStatusLabel statusLabel;
         private ToolStripProgressBar progressBar;
         private CheckBox Close_LimitToggle;
+        private TabPage tabPage1;
+        private RichTextBox Update_NoteTextBox;
+        private Label Update_NoteTextLabel;
+        private CheckBox Update_InternalToggleButton;
+        private CheckBox Update_PublicToggleButton;
+        private Button Update_SubmitButton;
+        private Label Update_AttachmentsLabel;
+        private Button Update_AddAttachButton;
+        private ListBox Update_AttachmentList;
+        private Button Update_RemoveAttachButton;
     }
 }
