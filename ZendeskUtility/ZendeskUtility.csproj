@@ -61,6 +61,9 @@
     <None Update="Media\bruh.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Media\crab_loop.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Media\discord-in.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -8,11 +8,20 @@ using System.Text.Json;
 
 namespace ZendeskUtility
 {
-    //todo add audio options.
-    
+    /**
+     * Ideas:
+     * If ticket number contains 420 play snoop dogg sound effect
+     * If ticket number contains 69 play nice
+     * Add minigame
+     *  - Snake?
+     *  - Flappy Bird
+     *  convert snoopdogg and nice to wav
+     * 
+     * 
+    */
     public partial class MainForm : Form
     {
-        private List<SoundEffect> SoundEffects;
+        private static List<SoundEffect> SoundEffects;
         private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
         private readonly List<string> CloseTicketList;
         private static Boolean CloseLimitEnabled = false;
@@ -25,16 +34,19 @@ namespace ZendeskUtility
                 string key = System.IO.File.ReadAllText("APIKEY.txt");
                 if (key != "")
                 {
-
+                    log.Info("Setting API_KEY");
                     Globals.API_KEY = key;
                 }
                 else
                 {
+                    log.Error("APIKEY.txt is empty");
                     throw new Exception("APIKEY.txt is empty");
+                    
                 }
             }
             catch (FileNotFoundException ex)
             {
+                PlaySound("roblox_oof");
                 MessageBox.Show("You need an API key in APIKEY.txt");
                 File.Create("APIKEY.txt");
                 log.Error("APIKEY.txt not found. Created new file.");
@@ -42,6 +54,7 @@ namespace ZendeskUtility
             }
             catch (Exception e)
             {
+                PlaySound("roblox_oof");
                 MessageBox.Show("Error reading APIKEY.txt: " + e.Message);
             }
             SoundEffects = new List<SoundEffect>();
@@ -84,6 +97,7 @@ namespace ZendeskUtility
                 }
                 catch (Exception ex)
                 {
+                    PlaySound("roblox_oof");
                     log.Error("Error deleting 'exported.txt' file: " + ex.Message);
                 }
             }
@@ -97,6 +111,7 @@ namespace ZendeskUtility
                 }
                 catch (Exception ex)
                 {
+                    PlaySound("roblox_oof");
                     log.Error("Error deleting 'shipper.csv' file: " + ex.Message);
                 }
             }
@@ -116,7 +131,14 @@ namespace ZendeskUtility
 
             // Validate that the ticket number is an integer
             bool isValidTicketNumber = int.TryParse(ticketNumberText, out int ticketNumber);
-
+            if (isValidTicketNumber && ticketNumberText.Contains("69"))
+            {
+                PlaySound("nice");
+            }
+            if (isValidTicketNumber && ticketNumberText.Contains("420"))
+            {
+                PlaySound("snoop-dogg");
+            }
             if (isValidTicketNumber)
             {
 
@@ -319,6 +341,7 @@ namespace ZendeskUtility
             }
             catch (Exception ex)
             {
+                PlaySound("roblox_oof");
                 log.Error("Error reading CSV file: " + ex.Message);
             }
 
@@ -328,7 +351,7 @@ namespace ZendeskUtility
         private void Close_AddButton_Click(object sender, EventArgs e)
         {
             UpdateTicketList();
-
+            PlaySound("boom");
         }
         private void Close_ClearListButton_Click(object sender, EventArgs e)
         {
@@ -347,6 +370,11 @@ namespace ZendeskUtility
 #pragma warning restore CS8604 // Possible null reference argument.
                 UpdateItemList();
             }
+            else
+            {
+                PlaySound("roblox_oof");
+                log.Error("Close-Delete pressed. No item to delete.");
+            }
         }
         private void InputTicketTextBox_KeyDown(object sender, KeyEventArgs e)
         {
@@ -354,17 +382,39 @@ namespace ZendeskUtility
             {
                 e.Handled = true; // Prevent further processing of the Enter key
                 UpdateTicketList();
-
                 PlaySound("boom");
             }
         }
-
-        private void PlaySound(string v)
+        private static void PlaySound(string v)
         {
             foreach(SoundEffect e in SoundEffects)
             {
                 if (e.Name.ToLower().Trim().Equals(v.ToLower().Trim())){
                     e.PlaySound();
+                    return;
+                }
+            }
+            MessageBox.Show($"No sound with the name {v}");
+        }
+        private static void LoopSound(string v)
+        {
+            foreach (SoundEffect e in SoundEffects)
+            {
+                if (e.Name.ToLower().Trim().Equals(v.ToLower().Trim()))
+                {
+                    e.LoopSound();
+                    return;
+                }
+            }
+            MessageBox.Show($"No sound with the name {v}");
+        }
+        private static void StopSound(string v)
+        {
+            foreach (SoundEffect e in SoundEffects)
+            {
+                if (e.Name.ToLower().Trim().Equals(v.ToLower().Trim()))
+                {
+                    e.StopSound();
                     return;
                 }
             }
@@ -422,6 +472,8 @@ namespace ZendeskUtility
             }
             catch (Exception ex)
             {
+                PlaySound("roblox_oof");
+                MessageBox.Show($"Error occurred while updating ticket number {ticketNumber}: {ex.Message}");
                 log.Error($"Error occurred while updating ticket number {ticketNumber}: {ex.Message}");
                 log.Info(System.Text.Json.JsonSerializer.Serialize(jsonPayload));
                 log.Error(ex.Message);
@@ -440,7 +492,8 @@ namespace ZendeskUtility
             }
             catch (Exception e)
             {
-                log.Error($"Error occurred during GET ZDImageRequest for ticket number {ticketNumber}: {e.Message}");
+                PlaySound("roblox_oof");
+                log.Error($"Error occurred during GET Ticket Subject Request for ticket number {ticketNumber}: {e.Message}");
                 log.Info(e.Message);
             }
 
@@ -454,6 +507,7 @@ namespace ZendeskUtility
             }
             else
             {
+                PlaySound("roblox_oof");
                 log.Warn($"No subject found for ticket number: {ticketNumber}");
                 return "No Data Found";
             }
@@ -473,6 +527,8 @@ namespace ZendeskUtility
                     }
                     else
                     {
+                        PlaySound("roblox_oof");
+                        log.Error("Too many tickets in list.");
                         MessageBox.Show("We already have 10 tickets in this list. ");
                     }
                 }
@@ -540,7 +596,8 @@ namespace ZendeskUtility
                     catch (WebException ex)
                     {
                         log.Error($"Error uploading {Path.GetFileName(filename)} to Zendesk: {ex.Message}");
-
+                        PlaySound("roblox_oof");
+                        MessageBox.Show($"Error uploading {Path.GetFileName(filename)} to Zendesk: {ex.Message}");
                     }
                 }
                 tokens = zdTokens.ToArray();
@@ -562,7 +619,7 @@ namespace ZendeskUtility
             SendZendeskPayload(ticketNumber, ZDImagePayload);
             // Display a textbox for additional input
             UpdateStatus("P: Gathering SOID", 8, 10);
-            string soidInput = Microsoft.VisualBasic.Interaction.InputBox("Enter Part SOID:", "SOID Input", "");
+            string soidInput = Microsoft.VisualBasic.Interaction.InputBox("Enter Part SOID:", "SOID Input", "null");
             UpdateStatus("P: Sending SOID Post", 9, 10);
             var ZDSOIDPayload = new
             {
@@ -627,10 +684,12 @@ namespace ZendeskUtility
             if (CloseLimitEnabled)
             {
                 colorGenerator.StopTimer();
+                StopSound("crab_loop");
             }
             else
             {
                 colorGenerator.StartTimer();
+                LoopSound("crab_loop");
             }
         }
         private void UpdateAttachments(string[] fileNames)
@@ -690,21 +749,21 @@ namespace ZendeskUtility
                 {
                     byte[] fileContents = File.ReadAllBytes(filename);
                     string url = "https://dhecs.zendesk.com/api/v2/uploads" + "?filename=" + Path.GetFileName(filename);
-                    HttpWebRequest imgrequest = (HttpWebRequest)WebRequest.Create(url);
-                    imgrequest.Method = "POST";
-                    imgrequest.ContentType = "application/binary";
-                    imgrequest.Headers["Authorization"] = "Basic " + Globals.API_KEY;
-                    using (Stream imgrequestStream = imgrequest.GetRequestStream())
+                    HttpWebRequest updateRequest = (HttpWebRequest)WebRequest.Create(url);
+                    updateRequest.Method = "POST";
+                    updateRequest.ContentType = "application/binary";
+                    updateRequest.Headers["Authorization"] = "Basic " + Globals.API_KEY;
+                    using (Stream updateRequestStream = updateRequest.GetRequestStream())
                     {
-                        imgrequestStream.Write(fileContents, 0, fileContents.Length);
+                        updateRequestStream.Write(fileContents, 0, fileContents.Length);
                     }
                     try
                     {
-                        using HttpWebResponse imgresponse = (HttpWebResponse)imgrequest.GetResponse();
-                        if (imgresponse.StatusCode == HttpStatusCode.Created)
+                        using HttpWebResponse updateResponse = (HttpWebResponse)updateRequest.GetResponse();
+                        if (updateResponse.StatusCode == HttpStatusCode.Created)
                         {
                             log.Info($"Uploaded {Path.GetFileName(filename)} to Zendesk.");
-                            using var reader = new StreamReader(imgresponse.GetResponseStream());
+                            using var reader = new StreamReader(updateResponse.GetResponseStream());
                             string responseText = reader.ReadToEnd();
                             dynamic? jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseText);
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -716,11 +775,14 @@ namespace ZendeskUtility
                         }
                         else
                         {
-                            log.Warn($"Error uploading {Path.GetFileName(filename)} to Zendesk: {imgresponse.StatusCode} - {imgresponse.StatusDescription}");
+                            log.Warn($"Error uploading {Path.GetFileName(filename)} to Zendesk: {updateResponse.StatusCode} - {updateResponse.StatusDescription}");
                         }
                     }
                     catch (WebException ex)
                     {
+                        PlaySound("roblox_oof");
+                        MessageBox.Show($"Error uploading {Path.GetFileName(filename)} to Zendesk: {ex.Message}");
+
                         log.Error($"Error uploading {Path.GetFileName(filename)} to Zendesk: {ex.Message}");
 
                     }

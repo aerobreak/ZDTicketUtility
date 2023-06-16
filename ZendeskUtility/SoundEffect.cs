@@ -30,6 +30,29 @@ namespace ZendeskUtility
               MessageBox.Show(ex.Message);
             }
         }
+        public void LoopSound()
+        {
+            try
+            {
 
+                Effect.PlayLooping();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        public void StopSound()
+        {
+            try
+            {
+
+                Effect.Stop();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }
