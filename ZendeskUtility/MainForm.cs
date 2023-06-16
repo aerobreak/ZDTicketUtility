@@ -1,5 +1,6 @@
 using log4net;
 using System.Diagnostics;
+using System.Media;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -7,10 +8,11 @@ using System.Text.Json;
 
 namespace ZendeskUtility
 {
-    //todo: update ticket message : bool public private, etc
-
+    //todo add audio options.
+    
     public partial class MainForm : Form
     {
+        private List<SoundEffect> SoundEffects;
         private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
         private readonly List<string> CloseTicketList;
         private static Boolean CloseLimitEnabled = false;
@@ -42,10 +44,19 @@ namespace ZendeskUtility
             {
                 MessageBox.Show("Error reading APIKEY.txt: " + e.Message);
             }
+            SoundEffects = new List<SoundEffect>();
+            //for each file in media directory, add the file to SoundEffects
+            string[] files = Directory.GetFiles("Media");
+            foreach (string file in files)
+            {
+                SoundEffects.Add(new SoundEffect(Path.GetFileNameWithoutExtension(file), file));
+                log.Info($"Added {file} to SoundEffects" );
+            }
             CloseTicketList = new List<string>();
             AttachmentFileNames = new List<string>();
             Cleanup();
             InitializeComponent();
+          
             UpdateStatus("Idle", 0);
             Globals.client.DefaultRequestHeaders.Accept.Add(
            new MediaTypeWithQualityHeaderValue("application/json"));
@@ -58,8 +69,8 @@ namespace ZendeskUtility
             Globals.ColorMode = 1;
 
             ColorGenerator.addTarget(this);
+            PlaySound("discord-in");
         }
-
         private void Cleanup()
         {
             log.Info("Performing cleanup before exit...");
@@ -94,6 +105,7 @@ namespace ZendeskUtility
         }
         private async void ZDTicketSearchButton_Click(object sender, EventArgs e)
         {
+            PlaySound("taco-bell");
             UpdateStatus("Starting Search", 5);
             // Step 1: Retrieve the ticket number from ZDTicketTextBox
             string ticketNumberText = ZDTicketTextBox.Text;
@@ -134,7 +146,7 @@ namespace ZendeskUtility
             {
                 // Log the invalid ticket number
                 log.Warn($"Invalid ticket number: {ticketNumberText}");
-
+                PlaySound("bruh");
                 // Handle the case when the ticket number is not a valid integer
                 MessageBox.Show("Please enter a valid ticket number.");
 
@@ -192,6 +204,7 @@ namespace ZendeskUtility
             }
             else
             {
+                PlaySound("bruh");
                 MessageBox.Show("Invalid Ticket #");
                 UpdateStatus("Idle", 0);
             }
@@ -258,6 +271,7 @@ namespace ZendeskUtility
             }
             else
             {
+                PlaySound("bruh");
                 MessageBox.Show("Invalid Ticket #");
                 UpdateStatus("Idle", 0);
             }
@@ -318,11 +332,13 @@ namespace ZendeskUtility
         }
         private void Close_ClearListButton_Click(object sender, EventArgs e)
         {
+            PlaySound("pipe");
             CloseTicketList.Clear();
             UpdateItemList();
         }
         private void Close_DeleteItemButton_Click(object sender, EventArgs e)
         {
+            PlaySound("bonk");
             if (Close_TicketDisplayListBox.SelectedItem != null)
             {
                 string? selectedItem = Close_TicketDisplayListBox.SelectedItem.ToString();
@@ -336,9 +352,23 @@ namespace ZendeskUtility
         {
             if (e.KeyCode == Keys.Enter)
             {
-                UpdateTicketList();
                 e.Handled = true; // Prevent further processing of the Enter key
+                UpdateTicketList();
+
+                PlaySound("boom");
             }
+        }
+
+        private void PlaySound(string v)
+        {
+            foreach(SoundEffect e in SoundEffects)
+            {
+                if (e.Name.ToLower().Trim().Equals(v.ToLower().Trim())){
+                    e.PlaySound();
+                    return;
+                }
+            }
+            MessageBox.Show($"No sound with the name {v}");
         }
         private void UpdateItemList()
         {
@@ -591,7 +621,6 @@ namespace ZendeskUtility
             log.Info("Initials modified. Saving for persistence.");
             SaveInitials(InitialsTextBox.Text);
         }
-
         private void Close_LimitToggle_CheckedChanged(object sender, EventArgs e)
         {
             CloseLimitEnabled = !Close_LimitToggle.Checked;
@@ -604,14 +633,10 @@ namespace ZendeskUtility
                 colorGenerator.StartTimer();
             }
         }
-
-
-
         private void UpdateAttachments(string[] fileNames)
         {
             try
             {
-
                 //print the list of attachments 
                 foreach (string fname in fileNames)
                 {
@@ -626,7 +651,6 @@ namespace ZendeskUtility
                 log.Error($"Error updating attachment list: {ex.Message}");
             }
         }
-
         private void Update_AddAttachButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new()
@@ -642,7 +666,6 @@ namespace ZendeskUtility
             Update_AttachmentList.DataSource = null;
             Update_AttachmentList.DataSource = AttachmentFileNames;
         }
-
         private void Update_RemoveAttachButton_Click(object sender, EventArgs e)
         {
             if (Update_AttachmentList.SelectedItem != null)
@@ -656,7 +679,6 @@ namespace ZendeskUtility
             Update_AttachmentList.DataSource = null;
             Update_AttachmentList.DataSource = AttachmentFileNames;
         }
-
         private void Update_SubmitButton_Click(object sender, EventArgs e)
         {
             bool isValidTicketNumber = int.TryParse(ZDTicketTextBox.Text, out int ticketNumber);
@@ -726,7 +748,6 @@ namespace ZendeskUtility
                 MessageBox.Show("Invalid Ticket Number");
             }
         }
-
         private void Update_PublicToggleButton_CheckedChanged(object sender, EventArgs e)
         {
             //if checked, set InternalToggleButton to unchecked, and vice versa
@@ -739,7 +760,6 @@ namespace ZendeskUtility
                 Update_InternalToggleButton.Checked = true;
             }
         }
-
         private void Update_InternalToggleButton_CheckedChanged(object sender, EventArgs e)
         {
             //if checked, set PublicToggleButton to unchecked, and vice versa
